@@ -17,6 +17,12 @@ describe HateQuery do
     it "should set default output as json" do
       expect(new_query.output).to eql "json"
     end
+    it "should accept a valid api key" do
+      hq = new_query
+      key = "1234567890abcdef1234567890abcdef"
+      hq.key = key
+      expect(hq.key).to eql key
+    end
   end
   it "should know what a valid key looks like" do
     key = "1234567890abcdef1234567890abcdef"
