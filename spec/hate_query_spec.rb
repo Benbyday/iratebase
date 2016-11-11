@@ -1,5 +1,7 @@
 require "iratebase/hate_query"
 
+HateQuery = Iratebase::HateQuery
+
 describe HateQuery do
   context "when creating a new query and no key is given" do
     def new_query
