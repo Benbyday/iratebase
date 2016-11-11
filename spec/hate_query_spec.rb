@@ -24,6 +24,24 @@ describe HateQuery do
       key = "1234567890abcdef1234567890abcdef"
       hq.key = key
       expect(hq.key).to eql key
+      key = "fedcba0987654321fedcba0987654321"
+      expect(hq.set_key(key).key).to eql key
+    end
+    it "should reject an invalid api key" do
+      hq = new_query
+      key = "1234567890abcdef1234567890abcdeg"
+      expect{hq.set_key(key)}.to raise_error(HateQuery::KeyError)
+      expect(hq.key).to eql ""
+    end
+  end
+  context "in standard use" do
+    it "should be easy to set up a new query in one line" do
+      key = "1234567890abcdef1234567890abcdef"
+      hq = HateQuery.new(key).vocab
+      expect(hq.key).to eql key
+      expect(hq.version).to eql "v3-0"
+      expect(hq.query_type).to eql "vocabulary"
+      expect(hq.output).to eql "json"
     end
   end
   it "should know what a valid key looks like" do
