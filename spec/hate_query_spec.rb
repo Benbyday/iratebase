@@ -1,4 +1,4 @@
-require "iratebase/hate_query"
+require "iratebase"
 
 HateQuery = Iratebase::HateQuery
 
@@ -53,5 +53,19 @@ describe HateQuery do
     expect(HateQuery.valid_key(key)).to be false
     key = "1234567890abcdef1234567890abcdeg"
     expect(HateQuery.valid_key(key)).to be false
+  end
+  it "should know what a valid vocab word looks like" do
+    word = "aligator bait"
+    expect(HateQuery.valid_vocabulary(word)).to be true
+    word = "Aunt Jane"
+    expect(HateQuery.valid_vocabulary(word)).to be true
+    word = "bans and cans"
+    expect(HateQuery.valid_vocabulary(word)).to be true
+    word = "Afro-Saxon"
+    expect(HateQuery.valid_vocabulary(word)).to be true
+    word = "this will FA1L"
+    expect(HateQuery.valid_vocabulary("this will FA1L")).to be false
+    word = "don\'t pass"
+    expect(HateQuery.valid_vocabulary("don\'t pass")).to be false
   end
 end
