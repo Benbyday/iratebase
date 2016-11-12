@@ -1,4 +1,6 @@
 require "iratebase"
+require "pry"
+require "pry-byebug"
 
 HateQuery = Iratebase::HateQuery
 
@@ -45,27 +47,37 @@ describe HateQuery do
     end
   end
   it "should know what a valid key looks like" do
-    key = "1234567890abcdef1234567890abcdef"
-    expect(HateQuery.valid_key(key)).to be true
-    key = "1"
-    expect(HateQuery.valid_key(key)).to be false
-    key = "fedcba0987654321fedcba098765432"
-    expect(HateQuery.valid_key(key)).to be false
-    key = "1234567890abcdef1234567890abcdeg"
-    expect(HateQuery.valid_key(key)).to be false
+    keys = {"1234567890abcdef1234567890abcdef" => true,
+           "1" => false,
+           "fedcba0987654321fedcba098765432" => false,
+           "1234567890abcdef1234567890abcdeg" => false}
+    keys.each{|key, value| expect(HateQuery.valid_key(key)).to be value}
   end
   it "should know what a valid vocab word looks like" do
-    word = "aligator bait"
-    expect(HateQuery.valid_vocabulary(word)).to be true
-    word = "Aunt Jane"
-    expect(HateQuery.valid_vocabulary(word)).to be true
-    word = "bans and cans"
-    expect(HateQuery.valid_vocabulary(word)).to be true
-    word = "Afro-Saxon"
-    expect(HateQuery.valid_vocabulary(word)).to be true
-    word = "this will FA1L"
-    expect(HateQuery.valid_vocabulary("this will FA1L")).to be false
-    word = "don\'t pass"
-    expect(HateQuery.valid_vocabulary("don\'t pass")).to be false
+    words = {"aligator bait" => true,
+            "Aunt Jane" => true,
+            "bans and cans" => true,
+            "Afro-Saxon" => true,
+            "this will FA1L" => false,
+            "don\'t pass" => false}
+    words.each do |word, value|
+      expect(HateQuery.valid_vocabulary(word)).to be value
+    end
+  end
+  it "should know what a valid language code looks like" do
+    words = {"abc" => true,
+             "eng" => true,
+             "1bc" => false,
+             "" => false,
+             nil => false,
+             "a" => false,
+             "ENG" => false,
+             "Eng" => false,
+             "toolong" => false,
+             "--------" => false,
+             "---" => false}
+    words.each do |word, value|
+      expect(HateQuery.valid_language(word)).to be value
+    end
   end
 end
