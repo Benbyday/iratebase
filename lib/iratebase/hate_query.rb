@@ -8,6 +8,8 @@ module Iratebase
     class KeyError < QueryError
     end
 
+    class FlagError < QueryError
+
     ABOUT_ETHNICITY = 1
     ABOUT_NATIONALITY = 2
     ABOUT_RELIGION = 4
@@ -77,9 +79,15 @@ module Iratebase
       end
     end
 
+    def set_version(ver = 3, subver = 0)
+      self.version = ver
+      self.subversion = subver
+      self
+    end
+
     def key=(key)
       @key = if key == '' || HateQuery.valid_key(key)
-               key.to_s
+               key
              else
                raise KeyError.exception 'a key must be a 32 digit hexadecimal '\
                   'number. You can obtain a key from '\
@@ -110,6 +118,20 @@ module Iratebase
 
     def xml
       @output = :xml
+      self
+    end
+
+    def vocabulary=(vocab)
+      @vocabulary = if HateQuery.valid_vocabulary(vocab)
+                      vocab
+                    else
+                      # TODO: raise an error. Figure out generic errors.
+                      nil
+                    end
+    end
+
+    def set_vocabulary(vocab)
+      self.vocabulary = vocab
       self
     end
 

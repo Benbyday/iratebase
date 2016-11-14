@@ -80,4 +80,56 @@ describe HateQuery do
       expect(HateQuery.valid_language(word)).to be value
     end
   end
+  it "should know what a valid country code looks like" do
+    words = {
+      "AB" => true,
+      "US" => true,
+      "us" => false,
+      "12" => false,
+      "1A" => false,
+      "" => false,
+      nil => false,
+      "A" => false,
+      "HOWABOUTTHAT" => false,
+      "123" => false
+    }
+    words.each do |word, value|
+      expect(HateQuery.valid_country(word)).to be value
+    end
+  end
+  it "should know what a valid sighting type looks like" do
+    words = {
+      "r" => true,
+      "o" => true,
+      "u" => true,
+      "t" => true,
+      "" => false,
+      nil => false,
+      "a" => false,
+      "R" => false,
+      "ro" => false,
+      "abc" => false
+    }
+    words.each do |word, value|
+      expect(HateQuery.valid_sighting_type(word)).to be value
+    end
+  end
+  it "should know what a valid date looks like" do
+    dates = {
+      "1234-56-78" => true,
+      "2016-01-01" => true,
+      "abcd-ef-gh" => false,
+      "12-34-5678" => false,
+      "" => false,
+      "2016-01" => false,
+      nil => false,
+      "hello" => false,
+      "1234-56-789" => false,
+      "12345-67-89" => false,
+      "completely wrong thing" => false
+    }
+    dates.each do |date, value|
+      expect(HateQuery.valid_date(date)).to be value
+    end
+  end
 end
