@@ -45,6 +45,24 @@ describe HateQuery do
       expect(hq.query_type).to eql "vocabulary"
       expect(hq.output).to eql "json"
     end
+    it "is easy to set the version in one line" do
+      key = "1234567890abcdef1234567890abcdef"
+      hq = HateQuery.new(key).vocab.set_version(2,5)
+      expect(hq.version).to eql "v2-5"
+      hq.set_version(3)
+      expect(hq.version).to eql "v3-0"
+    end
+    it "properly handles flags" do
+      hq = HateQuery.new.is("about_gender")
+      expect(hq.flags_string).to eql "is [\"about_gender\"] is not []"
+      hq = HateQuery.new.is("about_religion").is_not("about_gender")
+      expect(hq.flags_string).to eql "is [\"about_religion\"] is not"\
+                                     " [\"about_gender\"]"
+      hq.forget("about_gender", "about_religion")
+      expect(hq.flags_string).to eql ""
+      hq.is("about_class").is_not("about_class")
+      expect(hq.flags_string).to eql "is [] is not [\"about_class\"]"
+    end
   end
   it "should know what a valid key looks like" do
     keys = {"1234567890abcdef1234567890abcdef" => true,

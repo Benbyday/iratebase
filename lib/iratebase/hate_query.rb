@@ -8,16 +8,20 @@ module Iratebase
     class KeyError < QueryError
     end
 
-    class FlagError < QueryError
+    class FilterError < QueryError
+    end
 
-    ABOUT_ETHNICITY = 1
-    ABOUT_NATIONALITY = 2
-    ABOUT_RELIGION = 4
-    ABOUT_GENDER = 8
-    ABOUT_SEXUAL_ORIENTATION = 16
-    ABOUT_DISABILITY = 32
-    ABOUT_CLASS = 64
-    ARCHAIC = 128
+    @@flags = {
+      :about_ethnicity => 1,
+      :about_nationality => 2,
+      :about_religion => 4,
+      :about_gender => 8,
+      :about_sexual_orientation => 16,
+      :about_disability => 32,
+      :about_class => 64,
+      :archaic => 128,
+      :all => 255
+    }
 
     def initialize(key = '')
       self.key = key
@@ -28,7 +32,7 @@ module Iratebase
       @vocabulary = nil
       @variant_of = nil
       @language = 'eng'
-      @flags = 0
+      @flag_values = 0
       @relevant_flags = 0
       @country = 'US'
       @city = nil
@@ -125,13 +129,70 @@ module Iratebase
       @vocabulary = if HateQuery.valid_vocabulary(vocab)
                       vocab
                     else
-                      # TODO: raise an error. Figure out generic errors.
+                      raise FilterError.exception 'invalid vocabulary'
                       nil
                     end
     end
 
     def set_vocabulary(vocab)
       self.vocabulary = vocab
+      self
+    end
+
+    def variant_of=(var)
+      @variant_of = if HateQuery.valid_vocabulary(var)
+                      var
+                    else
+                      raise FilterError.exception 'invalid variant'
+                      nil
+                    end
+    end
+
+    def set_variant_of(var)
+      self.variant_of = var
+      self
+    end
+
+    def language=(lang)
+      @language = if HateQuery.valid_language(lang)
+                    lang
+                  else
+                    raise FilterError.exception 'invalid language'
+                    nil
+                  end
+    end
+
+    def set_language(lang)
+      self.language = lang
+      self
+    end
+
+    def is(*flags)
+      i = 0
+      flags.each do |flag|
+        i += @@flags[flag.to_s.downcase.to_sym]
+      end
+      @flag_values |= i
+      @relevant_flags |= i
+      self
+    end
+
+    def is_not(*flags)
+      i = 0
+      flags.each do |flag|
+        i += @@flags[flag.to_s.downcase.to_sym]
+      end
+      @relevant_flags |= i
+      @flag_values &= @@flags[:all] & ~i
+      self
+    end
+
+    def forget(*flags)
+      i = 0
+      flags.each do |flag|
+        i += @@flags[flag.to_s.downcase.to_sym]
+      end
+      @relevant_flags &= @@flags[:all] & ~i
       self
     end
 
@@ -150,6 +211,38 @@ module Iratebase
 
     def output
       @output.to_s
+    end
+
+    def vocabulary
+      @vocabulary.to_s
+    end
+
+    def variant_of
+      @variant_of.to_s
+    end
+
+    def language
+      @language.to_s
+    end
+
+    def flags_string
+      if @relevant_flags <= 0
+        return ""
+      end
+      is = []
+      is_not = []
+      (Math.log2(@relevant_flags).floor + 1).times do |f|
+        flag = 2**f
+        if @relevant_flags & flag == flag
+          flag_word = @@flags.key(flag).to_s
+          if @flag_values & flag == flag
+            is << flag_word
+          else
+            is_not << flag_word
+          end
+        end
+      end
+      return "is " + is.inspect + " is not " + is_not.inspect
     end
   end
 end
