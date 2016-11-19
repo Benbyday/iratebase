@@ -48,6 +48,8 @@ module Iratebase
     end
 
     @@filters.each do |filter, valid|
+      # create setters that work like normal setters and check to make sure the
+      # filter is of the correct form. These are of the form #{filter}=
       basic_set = (filter.to_s + '=').to_sym
       bs = Proc.new do |set|
         value = if @@valid.method(valid).call(set)
@@ -59,12 +61,21 @@ module Iratebase
         instance_variable_set("@#{filter}", value)
       end
       define_method(basic_set, bs)
+      # create setters that do exactly the same thing but return the self
+      # object after setting in order to be able to do complex things in one
+      # line. These are of the form set_#{filter}
       swift_set = ("set_" + filter.to_s).to_sym
       ss = Proc.new do |set|
         self.method(basic_set).call(set)
         self
       end
       define_method(swift_set, ss)
+      # create getters. These are of the form of just #{filter}
+      get = Proc.new do
+        str = inxtance_variable_get("@#{filter}")
+        "#{str}"
+      end
+      define_method(filter, get)
     end
 
     def initialize(key = '')
@@ -216,48 +227,53 @@ module Iratebase
       @output.to_s
     end
 
-    def vocabulary
-      @vocabulary.to_s
-    end
-
-    def variant_of
-      @variant_of.to_s
-    end
-
-    def language
-      @language.to_s
-    end
-
     def flags_string
       if @relevant_flags <= 0
-        return ""
+        return "any word or sighting"
       end
+      str = "word or sighting that"
+      is = self.is_flags
+      is_not = self.is_not_flags
+      if !is.empty?
+        isst = is.to_s
+        str += " is " + isst[1, isst.length - 2]
+      end
+      if !is.empty? && !is_not.empty?
+        str += " and"
+      end
+      if !is_not.empty?
+        isnt = is_not.to_s
+        str += " is not " + isnt[1, isnt.length - 2]
+      end
+      str
+    end
+
+    def is_flags
       is = []
-      is_not = []
+      if @relevant_flags <= 0
+        return is
+      end
       (Math.log2(@relevant_flags).floor + 1).times do |f|
         flag = 2**f
-        if @relevant_flags & flag == flag
-          flag_word = @@flags.key(flag).to_s
-          if @flag_values & flag == flag
-            is << flag_word
-          else
-            is_not << flag_word
-          end
+        if @relevant_flags & @flag_values & flag == flag
+          is << @@flags.key(flag)
         end
       end
-      return "is " + is.inspect + " is not " + is_not.inspect
+      return is
     end
 
-    def country
-      @country.to_s
-    end
-
-    def city
-      @city.to_s
-    end
-
-    def sighting_type
-      @sighting_type.to_s
+    def is_not_flags
+      is_not = []
+      if @relevant_flags <= 0
+        return is_not
+      end
+      (Math.log2(@relevant_flags).floor + 1).times do |f|
+        flag = 2**f
+        if @relevant_flags & ~@flag_values & flag == flag
+          is_not << @@flags.key(flag)
+        end
+      end
+      return is_not
     end
   end
 end

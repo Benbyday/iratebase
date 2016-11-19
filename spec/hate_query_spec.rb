@@ -54,14 +54,14 @@ describe HateQuery do
     end
     it "properly handles flags" do
       hq = HateQuery.new.is("about_gender")
-      expect(hq.flags_string).to eql "is [\"about_gender\"] is not []"
+      expect(hq.flags_string).to eql "word or sighting that is :about_gender"
       hq = HateQuery.new.is("about_religion").is_not("about_gender")
-      expect(hq.flags_string).to eql "is [\"about_religion\"] is not"\
-                                     " [\"about_gender\"]"
+      expect(hq.flags_string).to eql "word or sighting that is :about_religion"\
+                                     " and is not :about_gender"
       hq.forget("about_gender", "about_religion")
-      expect(hq.flags_string).to eql ""
+      expect(hq.flags_string).to eql "any word or sighting"
       hq.is("about_class").is_not("about_class")
-      expect(hq.flags_string).to eql "is [] is not [\"about_class\"]"
+      expect(hq.flags_string).to eql "word or sighting that is not :about_class"
     end
   end
   it "should know what a valid key looks like" do
