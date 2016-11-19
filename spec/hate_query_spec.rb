@@ -9,19 +9,19 @@ describe HateQuery do
     def new_query
       HateQuery.new
     end
-    it "should initialize an empty string" do
+    it "initializes an empty string" do
       expect(new_query.key).to eql ""
     end
-    it "should set the version to the default" do
+    it "sets the version to the default" do
       expect(new_query.version).to eql "v3-0"
     end
-    it "should not assume query type" do
+    it "does not assume query type" do
       expect(new_query.query_type).to eql ""
     end
-    it "should set default output as json" do
+    it "sets default output as json" do
       expect(new_query.output).to eql "json"
     end
-    it "should accept a valid api key" do
+    it "accepts a valid api key" do
       hq = new_query
       key = "1234567890abcdef1234567890abcdef"
       hq.key = key
@@ -29,7 +29,7 @@ describe HateQuery do
       key = "fedcba0987654321fedcba0987654321"
       expect(hq.set_key(key).key).to eql key
     end
-    it "should reject an invalid api key" do
+    it "rejects an invalid api key" do
       hq = new_query
       key = "1234567890abcdef1234567890abcdeg"
       expect{hq.set_key(key)}.to raise_error(HateQuery::KeyError)
@@ -37,7 +37,7 @@ describe HateQuery do
     end
   end
   context "in standard use" do
-    it "should be easy to set up a new query in one line" do
+    it "one can set up a new query in one line" do
       key = "1234567890abcdef1234567890abcdef"
       hq = HateQuery.new(key).vocab
       expect(hq.key).to eql key
@@ -64,14 +64,14 @@ describe HateQuery do
       expect(hq.flags_string).to eql "word or sighting that is not :about_class"
     end
   end
-  it "should know what a valid key looks like" do
+  it "knows what a valid key looks like" do
     keys = {"1234567890abcdef1234567890abcdef" => true,
            "1" => false,
            "fedcba0987654321fedcba098765432" => false,
            "1234567890abcdef1234567890abcdeg" => false}
     keys.each{|key, value| expect(HateQuery.valid_key(key)).to be value}
   end
-  it "should know what a valid vocab word looks like" do
+  it "knows what a valid vocab word looks like" do
     words = {"aligator bait" => true,
             "Aunt Jane" => true,
             "bans and cans" => true,
@@ -82,7 +82,7 @@ describe HateQuery do
       expect(HateQuery.valid_vocabulary(word)).to be value
     end
   end
-  it "should know what a valid language code looks like" do
+  it "knows what a valid language code looks like" do
     words = {"abc" => true,
              "eng" => true,
              "1bc" => false,
@@ -98,7 +98,7 @@ describe HateQuery do
       expect(HateQuery.valid_language(word)).to be value
     end
   end
-  it "should know what a valid country code looks like" do
+  it "knows what a valid country code looks like" do
     words = {
       "AB" => true,
       "US" => true,
@@ -115,7 +115,7 @@ describe HateQuery do
       expect(HateQuery.valid_country(word)).to be value
     end
   end
-  it "should know what a valid sighting type looks like" do
+  it "knows what a valid sighting type looks like" do
     words = {
       "r" => true,
       "o" => true,
@@ -132,7 +132,7 @@ describe HateQuery do
       expect(HateQuery.valid_sighting_type(word)).to be value
     end
   end
-  it "should know what a valid date looks like" do
+  it "knows what a valid date looks like" do
     dates = {
       "1234-56-78" => true,
       "2016-01-01" => true,
