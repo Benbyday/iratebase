@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["benpolson.zena@gmail.com"]
 
   spec.summary       = %q{Access hatebase using ruby}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
+  spec.description   = %q{Access that hatebase okay? Goodness so picky.}
   spec.homepage      = "https://github.com/Benbyday/iratebase"
   spec.license       = "MIT"
 

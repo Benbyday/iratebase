@@ -1,5 +1,3 @@
-require 'iratebase'
-
 module Iratebase
   class HateQuery
     class QueryError < RuntimeError
@@ -23,6 +21,52 @@ module Iratebase
       :all => 255
     }
 
+    @@filters = {
+      :vocabulary => :vocabulary,
+      :variant_of => :vocabulary,
+      :language => :language,
+      :country => :country,
+      :city => :vocabulary,
+      :sighting_type => :sighting_type,
+      :start_date => :date,
+      :end_date => :date
+    }
+
+    @@valids = {
+      :key => /[0-9a-f]{32}/,
+      :vocabulary => /[a-zA-Z \-]+/,
+      :language => /[a-z]{3}/,
+      :country => /[A-Z]{2}/,
+      :sighting_type => /[rout]/,
+      :date => /\d{4}-\d{2}-\d{2}/
+    }
+
+    @@valid = Iratebase::Valid.new
+
+    @@valids.each do |key, val|
+      @@valid.from_regex(key, val)
+    end
+
+    @@filters.each do |filter, valid|
+      basic_set = (filter.to_s + '=').to_sym
+      bs = Proc.new do |set|
+        value = if @@valid.method(valid).call(set)
+                  "#{set}"
+                else
+                  raise FilterError.exception "invalid #{filter}"
+                  nil
+                end
+        instance_variable_set("@#{filter}", value)
+      end
+      define_method(basic_set, bs)
+      swift_set = ("set_" + filter.to_s).to_sym
+      ss = Proc.new do |set|
+        self.method(basic_set).call(set)
+        self
+      end
+      define_method(swift_set, ss)
+    end
+
     def initialize(key = '')
       self.key = key
       @version = 3
@@ -36,34 +80,35 @@ module Iratebase
       @relevant_flags = 0
       @country = 'US'
       @city = nil
-      @type = nil
+      @sighting_type = nil
       @start_date = nil
       @end_date = nil
     end
 
+    # TODO: Get rid of all of these valid methods.
     # Class methods
     def self.valid_key(key)
-      Iratebase.perfect_match(/[0-9a-f]{32}/, key)
+      @@valid.key(key)
     end
 
     def self.valid_vocabulary(vocab)
-      Iratebase.perfect_match(/[a-zA-Z \-]+/, vocab)
+      @@valid.vocabulary(vocab)
     end
 
     def self.valid_language(lang)
-      Iratebase.perfect_match(/[a-z]{3}/, lang)
+      @@valid.language(lang)
     end
 
     def self.valid_country(country)
-      Iratebase.perfect_match(/[A-Z]{2}/, country)
+      @@valid.country(country)
     end
 
     def self.valid_sighting_type(type)
-      Iratebase.perfect_match(/[rout]/, type)
+      @@valid.sighting_type(type)
     end
 
     def self.valid_date(date)
-      Iratebase.perfect_match(/\d{4}-\d{2}-\d{2}/, date)
+      @@valid.date(date)
     end
 
     # Setters
@@ -122,48 +167,6 @@ module Iratebase
 
     def xml
       @output = :xml
-      self
-    end
-
-    def vocabulary=(vocab)
-      @vocabulary = if HateQuery.valid_vocabulary(vocab)
-                      vocab
-                    else
-                      raise FilterError.exception 'invalid vocabulary'
-                      nil
-                    end
-    end
-
-    def set_vocabulary(vocab)
-      self.vocabulary = vocab
-      self
-    end
-
-    def variant_of=(var)
-      @variant_of = if HateQuery.valid_vocabulary(var)
-                      var
-                    else
-                      raise FilterError.exception 'invalid variant'
-                      nil
-                    end
-    end
-
-    def set_variant_of(var)
-      self.variant_of = var
-      self
-    end
-
-    def language=(lang)
-      @language = if HateQuery.valid_language(lang)
-                    lang
-                  else
-                    raise FilterError.exception 'invalid language'
-                    nil
-                  end
-    end
-
-    def set_language(lang)
-      self.language = lang
       self
     end
 
@@ -243,6 +246,18 @@ module Iratebase
         end
       end
       return "is " + is.inspect + " is not " + is_not.inspect
+    end
+
+    def country
+      @country.to_s
+    end
+
+    def city
+      @city.to_s
+    end
+
+    def sighting_type
+      @sighting_type.to_s
     end
   end
 end
