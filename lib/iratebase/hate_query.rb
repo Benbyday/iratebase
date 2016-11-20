@@ -32,6 +32,8 @@ module Iratebase
       :end_date => :date
     }
 
+    @@vocab_filt = [:vocabulary, :variant_of, :language]
+
     @@valids = {
       :key => /[0-9a-f]{32}/,
       :vocabulary => /[a-zA-Z \-]+/,
@@ -274,6 +276,42 @@ module Iratebase
         end
       end
       return is_not
+    end
+
+    # doers
+    def get_query
+      if key == ''
+        raise KeyError.exception 'a key must be a 32 digit hexadecimal '\
+            'number. You can obtain a key from '\
+            'https://www.hatebase.org/login_register/redirect/request_api'
+      end
+      if @query_type == nil
+        raise FilterError.exception 'you must decide if you are searching for'\
+            'vocabulary or sightings'
+      end
+      query = "http://api.hatebase.org/" + self.version + "/" + self.key +
+          "/" + self.query_type + "/" + self.output + "/"
+      filt_arr = []
+      if self.query_type == "vocabulary"
+        filt_arr = @@vocab_filt
+      else
+        filt_arr = @@filters.keys
+      end
+      f = filt_arr.reduce("") do |prev, filter|
+        val = self.instance_variable_get('@' + filter.to_s)
+        if val != nil
+          prev += "%7C" + filter.to_s + "%3D" + URI.encode(val.to_s)
+        end
+        prev
+      end
+      f += self.is_flags.reduce("") do |prev, flag|
+        prev += "%7C" + flag.to_s + "%3D1"
+      end
+      f += self.is_not_flags.reduce("") do |prev, flag|
+        prev += "%7C" + flag.to_s + "%3D0"
+      end
+      query += f[3, f.length]
+      query
     end
   end
 end

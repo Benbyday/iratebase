@@ -64,6 +64,17 @@ describe HateQuery do
       expect(hq.flags_string).to eql "word or sighting that is not :about_class"
     end
   end
+  context "when a simple query is complete" do
+    it "produces the simplest query" do
+      key = "1234567890abcdef1234567890abcdef"
+      hq = HateQuery.new(key).vocab
+      expect(hq.get_query).to eql "http://api.hatebase.org/v3-0/" + key +
+          "/vocabulary/json/language%3Deng"
+      hq = HateQuery.new(key).sightings
+      expect(hq.get_query).to eql "http://api.hatebase.org/v3-0/" + key +
+          "/sightings/json/language%3Deng%7Ccountry%3DUS"
+    end
+  end
   it "knows what a valid key looks like" do
     keys = {"1234567890abcdef1234567890abcdef" => true,
            "1" => false,
