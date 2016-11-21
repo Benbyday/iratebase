@@ -279,7 +279,7 @@ module Iratebase
     end
 
     # doers
-    def get_query
+    def to_s
       if key == ''
         raise KeyError.exception 'a key must be a 32 digit hexadecimal '\
             'number. You can obtain a key from '\
@@ -289,7 +289,7 @@ module Iratebase
         raise FilterError.exception 'you must decide if you are searching for'\
             'vocabulary or sightings'
       end
-      query = "http://api.hatebase.org/" + self.version + "/" + self.key +
+      query = "https://api.hatebase.org/" + self.version + "/" + self.key +
           "/" + self.query_type + "/" + self.output + "/"
       filt_arr = []
       if self.query_type == "vocabulary"
@@ -312,6 +312,17 @@ module Iratebase
       end
       query += f[3, f.length]
       query
+    end
+
+    def get_query
+      uri = URI.parse(self.to_s)
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      res = http.get(uri.request_uri)
+      str = res.body()
+      obj = JSON.parse(str)
+      obj
     end
   end
 end

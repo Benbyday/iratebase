@@ -68,11 +68,18 @@ describe HateQuery do
     it "produces the simplest query" do
       key = "1234567890abcdef1234567890abcdef"
       hq = HateQuery.new(key).vocab
-      expect(hq.get_query).to eql "http://api.hatebase.org/v3-0/" + key +
+      expect(hq.to_s).to eql "https://api.hatebase.org/v3-0/" + key +
           "/vocabulary/json/language%3Deng"
       hq = HateQuery.new(key).sightings
-      expect(hq.get_query).to eql "http://api.hatebase.org/v3-0/" + key +
+      expect(hq.to_s).to eql "https://api.hatebase.org/v3-0/" + key +
           "/sightings/json/language%3Deng%7Ccountry%3DUS"
+    end
+    it "is not nil after a request" do
+      key = "1234567890abcdef1234567890abcdef"
+      hq = HateQuery.new(key).vocab
+      binding.pry
+      results = hq.get_query
+      expect(results).not_to be nil
     end
   end
   it "knows what a valid key looks like" do
