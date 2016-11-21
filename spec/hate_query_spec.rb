@@ -75,9 +75,9 @@ describe HateQuery do
           "/sightings/json/language%3Deng%7Ccountry%3DUS"
     end
     it "is not nil after a request" do
+      #key = Iratebase.find_key('../')
       key = "1234567890abcdef1234567890abcdef"
       hq = HateQuery.new(key).vocab
-      binding.pry
       results = hq.get_query
       expect(results).not_to be nil
     end

@@ -209,7 +209,7 @@ module Iratebase
     end
 
     def key
-      String.new(@key)
+      "#{@key}"
     end
 
     def query_type
@@ -307,12 +307,12 @@ module Iratebase
 
     def get_query
       uri = URI.parse(self.to_s)
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      res = http.get(uri.request_uri)
-      str = res.body()
-      obj = JSON.parse(str)
+      obj = nil
+      Net::HTTP.start(uri.host, uri.port,
+      :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
+        request = Net::HTTP::Get.new uri
+        obj = Iratebase::Hatebase.new http.request(request).body()
+      end
       obj
     end
   end

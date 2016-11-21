@@ -7,4 +7,7 @@ module Iratebase
 
   class FilterError < QueryError
   end
+
+  class HatebaseError < RuntimeError
+  end
 end
