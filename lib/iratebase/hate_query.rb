@@ -1,14 +1,5 @@
 module Iratebase
   class HateQuery
-    class QueryError < RuntimeError
-    end
-
-    class KeyError < QueryError
-    end
-
-    class FilterError < QueryError
-    end
-
     @@flags = {
       :about_ethnicity => 1,
       :about_nationality => 2,
@@ -57,7 +48,7 @@ module Iratebase
         value = if @@valid.method(valid).call(set)
                   "#{set}"
                 else
-                  raise FilterError.exception "invalid #{filter}"
+                  raise Iratebase::FilterError.exception "invalid #{filter}"
                   nil
                 end
         instance_variable_set("@#{filter}", value)
@@ -148,10 +139,10 @@ module Iratebase
     end
 
     def key=(key)
-      @key = if key == '' || HateQuery.valid_key(key)
+      @key = if key == '' || @@valid.key(key)
                key
              else
-               raise KeyError.exception 'a key must be a 32 digit hexadecimal '\
+               raise Iratebase::KeyError.exception 'a key must be a 32 digit hexadecimal '\
                   'number. You can obtain a key from '\
                   'https://www.hatebase.org/login_register/redirect/request_api'
                ''
@@ -281,13 +272,13 @@ module Iratebase
     # doers
     def to_s
       if key == ''
-        raise KeyError.exception 'a key must be a 32 digit hexadecimal '\
-            'number. You can obtain a key from '\
+        raise Iratebase::KeyError.exception 'a key must be a 32 digit '\
+            'hexadecimal number. You can obtain a key from '\
             'https://www.hatebase.org/login_register/redirect/request_api'
       end
       if @query_type == nil
-        raise FilterError.exception 'you must decide if you are searching for'\
-            'vocabulary or sightings'
+        raise Iratebase::FilterError.exception 'you must decide if you are '\
+            'searching forvocabulary or sightings'
       end
       query = "https://api.hatebase.org/" + self.version + "/" + self.key +
           "/" + self.query_type + "/" + self.output + "/"

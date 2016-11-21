@@ -32,7 +32,7 @@ describe HateQuery do
     it "rejects an invalid api key" do
       hq = new_query
       key = "1234567890abcdef1234567890abcdeg"
-      expect{hq.set_key(key)}.to raise_error(HateQuery::KeyError)
+      expect{hq.set_key(key)}.to raise_error(Iratebase::KeyError)
       expect(hq.key).to eql ""
     end
   end
