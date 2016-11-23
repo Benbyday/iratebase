@@ -74,13 +74,22 @@ describe HateQuery do
       expect(hq.to_s).to eql "https://api.hatebase.org/v3-0/" + key +
           "/sightings/json/language%3Deng%7Ccountry%3DUS"
     end
-    it "is not nil after a request" do
+    it "rejects a fake key" do
       #key = Iratebase.find_key('../')
       key = "1234567890abcdef1234567890abcdef"
       hq = HateQuery.new(key).vocab
-      results = hq.get_query
-      expect(results).not_to be nil
+      expect{hq.get_query}.to raise_error(Iratebase::HatebaseError)
     end
+    # it "successfully returns a hatebase object regardless of key filters" do
+    #   key = Iratebase.find_key("../")
+    #   hq = HateQuery.new(key).vocab
+    #   binding.pry
+    #   hate = hq.get_query
+    #   expect(hate.is_a? Iratebase::Hatebase).to be true
+    #   hq.sightings
+    #   hate = hq.get_query
+    #   expect(hate.is_a? Iratebase::Hatebase).to be true
+    # end
   end
   it "knows what a valid key looks like" do
     keys = {"1234567890abcdef1234567890abcdef" => true,

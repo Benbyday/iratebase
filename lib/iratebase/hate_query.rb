@@ -17,7 +17,7 @@ module Iratebase
       :variant_of => :vocabulary,
       :language => :language,
       :country => :country,
-      :city => :vocabulary,
+      :city => :city,
       :sighting_type => :sighting_type,
       :start_date => :date,
       :end_date => :date
@@ -30,6 +30,7 @@ module Iratebase
       :vocabulary => /[a-zA-Z \-]+/,
       :language => /[a-z]{3}/,
       :country => /[A-Z]{2}/,
+      :city => /.+/,
       :sighting_type => /[rout]/,
       :date => /\d{4}-\d{2}-\d{2}/
     }
@@ -161,16 +162,6 @@ module Iratebase
 
     def sightings
       @query_type = :sightings
-      self
-    end
-
-    def json
-      @output = :json
-      self
-    end
-
-    def xml
-      @output = :xml
       self
     end
 
@@ -311,7 +302,8 @@ module Iratebase
       Net::HTTP.start(uri.host, uri.port,
       :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
         request = Net::HTTP::Get.new uri
-        obj = Iratebase::Hatebase.new http.request(request).body()
+        str = http.request(request).body
+        obj = Iratebase::Hatebase.new JSON.parse str
       end
       obj
     end

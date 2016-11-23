@@ -11,6 +11,9 @@ module Iratebase
     @@keys.each do |key, type|
       p = Proc.new do
         value = @hatebase[key.to_s]
+        if value.is_a? Hash && (value.empty? || value.has_key("0"))
+          return nil
+        end
         case type
         when :string
           "#{value}"
@@ -23,15 +26,16 @@ module Iratebase
       define_method(key, p)
     end
 
-    def initialize(str)
+    def initialize(hate)
       @hatebase = nil
-      hate = JSON.parse str
       errors = hate["errors"]
       if errors.has_key?("error_code")
         raise Iratebase::HatebaseError.exception errors["human_readable_error"]
       end
       hate.delete("page")
       hate.delete("number_of_results_on_this_page")
+      hate["data"] =
+        hate["data"]["datapoint"].map {|point| Iratebase::Datapoint.new point}
       @hatebase = hate
     end
   end
