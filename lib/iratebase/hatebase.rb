@@ -11,8 +11,10 @@ module Iratebase
     @@keys.each do |key, type|
       p = Proc.new do
         value = @hatebase[key.to_s]
-        if value.is_a? Hash && (value.empty? || value.has_key("0"))
-          return nil
+        if value.is_a? Hash
+          if value.empty? or value.has_key?("0")
+            return nil
+          end
         end
         case type
         when :string
@@ -37,6 +39,23 @@ module Iratebase
       hate["data"] =
         hate["data"]["datapoint"].map {|point| Iratebase::Datapoint.new point}
       @hatebase = hate
+    end
+
+    def join(hate)
+      if not hate.is_a? Iratebase::Hatebase
+        raise "Can only join two Hatebases."
+      end
+      @hatebase["data"] = hate.data + @hatebase["data"]
+      self
+    end
+
+    def to_json
+      red = self.data
+      und = red.map {|datapoint| datapoint.datapoint}
+      @hatebase["data"] = {"datapoint" => und}
+      json = JSON.generate(@hatebase)
+      @hatebase["data"] = red
+      json
     end
   end
 end

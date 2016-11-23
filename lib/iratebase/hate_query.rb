@@ -49,7 +49,7 @@ module Iratebase
         value = if @@valid.method(valid).call(set)
                   "#{set}"
                 else
-                  raise Iratebase::FilterError.exception "invalid #{filter}"
+                  raise Iratebase::FilterError.new "invalid #{filter}"
                   nil
                 end
         instance_variable_set("@#{filter}", value)
@@ -143,7 +143,7 @@ module Iratebase
       @key = if key == '' || @@valid.key(key)
                key
              else
-               raise Iratebase::KeyError.exception 'a key must be a 32 digit hexadecimal '\
+               raise Iratebase::KeyError.new 'a key must be a 32 digit hexadecimal '\
                   'number. You can obtain a key from '\
                   'https://www.hatebase.org/login_register/redirect/request_api'
                ''
@@ -263,12 +263,12 @@ module Iratebase
     # doers
     def to_s
       if key == ''
-        raise Iratebase::KeyError.exception 'a key must be a 32 digit '\
+        raise Iratebase::KeyError.new 'a key must be a 32 digit '\
             'hexadecimal number. You can obtain a key from '\
             'https://www.hatebase.org/login_register/redirect/request_api'
       end
       if @query_type == nil
-        raise Iratebase::FilterError.exception 'you must decide if you are '\
+        raise Iratebase::FilterError.new 'you must decide if you are '\
             'searching forvocabulary or sightings'
       end
       query = "https://api.hatebase.org/" + self.version + "/" + self.key +
@@ -297,15 +297,37 @@ module Iratebase
     end
 
     def get_query
-      uri = URI.parse(self.to_s)
-      obj = nil
+      query = self.to_s
+      hate_arr = [open_hate(query)]
+      more_search = hate_arr[0].number_of_results / 100
+      if more_search + hate_arr[0].number_of_queries_today >= 100
+        raise Iratebase::GetError.new "Finishing request would max out daily "\
+        "query limit."
+      elsif more_search == 0
+        return hate_arr[0]
+      end
+      if not query.end_with? "/"
+        query += "%7C"
+      end
+      more_search.times do |i|
+        hate_arr << open_hate(query + "page%3D" + (i + 2).to_s)
+      end
+      hate = hate_arr.reverse.reduce do |collect, hatebase|
+        collect.join(hatebase)
+      end
+      hate
+    end
+
+    def open_hate(query)
+      uri = URI.parse(query)
+      hate = nil
       Net::HTTP.start(uri.host, uri.port,
       :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
         request = Net::HTTP::Get.new uri
         str = http.request(request).body
-        obj = Iratebase::Hatebase.new JSON.parse str
+        hate = Iratebase::Hatebase.new JSON.parse str
       end
-      obj
+      hate
     end
   end
 end

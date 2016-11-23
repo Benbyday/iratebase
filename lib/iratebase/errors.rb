@@ -8,6 +8,9 @@ module Iratebase
   class FilterError < QueryError
   end
 
+  class GetError < QueryError
+  end
+
   class HatebaseError < RuntimeError
   end
 end
